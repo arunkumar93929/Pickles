@@ -1,0 +1,30 @@
+SHADRUCHULU — ORDER CONFIRMATION + MY ORDERS UPDATE
+
+This update adds a dedicated order confirmation page and a My Orders page, and connects them to the existing demo checkout flow.
+
+FILES INCLUDED (replace these complete files in your existing project):
+- src/App.jsx
+- src/pages/Checkout.jsx
+- src/pages/Account.jsx
+- src/pages/MyOrders.jsx              (new file)
+- src/pages/OrderConfirmation.jsx     (new file)
+- src/utils/orders.js                (new file)
+
+INSTALLATION:
+1. Keep your existing Shadruchulu project folder and make a backup if you want.
+2. Extract this ZIP.
+3. Copy the included src folder into your existing project folder (the folder that contains package.json).
+4. Choose Replace/Overwrite for the three existing files when asked. The two pages and orders utility are new files and will be added.
+5. Do not replace or delete your other src files.
+6. If the Vite server is already running, it should hot-reload. Otherwise run: npm run dev
+
+TEST:
+1. Add one or more products to the cart.
+2. Open Cart > Proceed to Checkout.
+3. Fill in the required demo customer and delivery details and place the demo order.
+4. You should be redirected to /order-confirmation/<order-number>.
+5. Click View My Orders, or open Account > View My Orders. The order should appear there.
+6. Refresh the browser and confirm the order remains listed.
+
+IMPORTANT:
+This is still a frontend demo. Orders are stored in localStorage in the current browser only. They are not sent to a backend, store owner, email, or delivery service. No payment is processed. Clearing browser site data or using another browser/device will not retain these demo orders.
