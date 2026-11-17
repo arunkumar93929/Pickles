@@ -5,6 +5,7 @@ import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 import productRoutes from "./routes/productRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
 
 const app = express();
 
@@ -37,6 +38,8 @@ app.get("/api/health", (req, res) => {
 });
 
 app.use("/api/products", productRoutes);
+app.use("/api/admin", adminRoutes);
+
 
 app.use((req, res) => {
     res.status(404).json({
