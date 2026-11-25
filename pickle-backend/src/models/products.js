@@ -27,8 +27,7 @@ const sizeSchema = new mongoose.Schema(
         weightInGrams: {
             type: Number,
             required: [true, "Product weight is required"],
-            min: [250, "Weight must be greater than zero"]
-        },
+            min: [250, "Product weight must be at least 250 grams"]        },
         price: {
             type: Number,
             required: [true, "Product price is required"],
@@ -59,18 +58,23 @@ const productSchema = new mongoose.Schema(
         category: {
             type: String,
             required: [true, "Product category is required"],
-            trim: true
+            trim: true,
+            minlength: [3, "Category must contain at least 3 characters"],
+            maxlength: [50, "Category cannot exceed 50 characters"]
         },
 
         images: {
             type: [imageSchema],
             required: true,
             validate: {
-                validator: images => images.length >= 1 && images.length <= 5,
+            validator: images =>
+                Array.isArray(images) &&
+                images.length >= 1 &&
+                images.length <= 5,
                 message: "A product must have between 1 and 5 images"
-            }
+        }
         },
-
+    
         sizes: {
             type: [sizeSchema],
             required: true,
@@ -81,7 +85,7 @@ const productSchema = new mongoose.Schema(
                 },
                 {
                     validator: sizes => {
-                        const labels = sizes.map(size => size.label.toLowerCase());
+                        const labels = sizes.map(size =>size.label.trim().replace(/\s+/g, "").toLowerCase());
                         return new Set(labels).size === labels.length;
                     },
                     message: "Duplicate product sizes are not allowed"

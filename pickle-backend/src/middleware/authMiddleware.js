@@ -1,10 +1,10 @@
-
+import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
 import Admin from "../models/admin.js";
 
 export const protectAdmin = async (req, res, next) => {
     try {
-        const token = req.cookies.adminToken;
+        const token = req.cookies?.adminToken;
 
         if (!token) {
             return res.status(401).json({
@@ -15,7 +15,9 @@ export const protectAdmin = async (req, res, next) => {
 
         const decoded = jwt.verify(
             token,
-            process.env.JWT_SECRET
+            process.env.JWT_SECRET,{
+                algorithms: ["HS256"]
+            }
         );
 
         if (decoded.role !== "owner") {
@@ -24,6 +26,15 @@ export const protectAdmin = async (req, res, next) => {
                 message: "Access denied"
             });
         }
+        if (
+    typeof decoded.adminId !== "string" ||
+    !mongoose.Types.ObjectId.isValid(decoded.adminId)
+) {
+    return res.status(401).json({
+        success: false,
+        message: "Invalid authentication token"
+    });
+}
 
         const admin = await Admin.findById(decoded.adminId);
 

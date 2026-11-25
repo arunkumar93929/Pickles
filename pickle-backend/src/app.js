@@ -6,7 +6,8 @@ import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 import productRoutes from "./routes/productRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
-
+import orderRoutes from "./routes/orderRoutes.js";
+import errorMiddleware from "./middleware/errorMiddleware.js";
 const app = express();
 
 app.use(helmet());
@@ -17,7 +18,11 @@ app.use(cors({
 }));
 
 app.use(express.json({ limit: "10kb" }));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ 
+    extended: true,
+    limit: "10kb",
+    parameterLimit: 100
+}));
 
 app.use(cookieParser());
 
@@ -39,6 +44,7 @@ app.get("/api/health", (req, res) => {
 
 app.use("/api/products", productRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/orders", orderRoutes);
 
 
 app.use((req, res) => {
@@ -47,5 +53,7 @@ app.use((req, res) => {
         message: "API endpoint not found"
     });
 });
+// Centralized error handling middleware
+app.use(errorMiddleware);
 
 export default app;
