@@ -9,6 +9,8 @@ export const getAdminProducts = async () => {
       limit: 100
     }
   });
+   console.log("Admin products API response:", response.data);
+  console.log("Products array:", response.data.products);
 
   return response.data.products || [];
 };

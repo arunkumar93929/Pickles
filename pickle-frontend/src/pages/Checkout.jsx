@@ -31,13 +31,20 @@ const initialForm = {
     street: "",
     villageOrCity: "",
     district: "",
-    state: "Andhra Pradesh",
+    state: "",
     pinCode: "",
     landmark: "",
     deliveryInstructions: ""
 };
 
+
 const getIdempotencyKey = async (payload) => {
+    if (!globalThis.crypto?.subtle || !globalThis.crypto?.randomUUID) {
+        throw new Error(
+            "Your browser does not support secure checkout. Please use an updated browser over HTTPS."
+        );
+    }
+
     const serializedPayload = JSON.stringify(payload);
 
     const hashBuffer = await crypto.subtle.digest(
@@ -58,23 +65,29 @@ const getIdempotencyKey = async (payload) => {
 
         if (
             previousAttempt?.fingerprint === fingerprint &&
-            previousAttempt?.key
+            typeof previousAttempt.key === "string"
         ) {
             return previousAttempt.key;
         }
     } catch {
-        sessionStorage.removeItem(storageKey);
+        // Storage may be unavailable or contain invalid data.
     }
 
     const key = crypto.randomUUID();
 
-    sessionStorage.setItem(
-        storageKey,
-        JSON.stringify({ fingerprint, key })
-    );
+    try {
+        sessionStorage.setItem(
+            storageKey,
+            JSON.stringify({ fingerprint, key })
+        );
+    } catch {
+        // The request can still proceed, but retry protection
+        // may not survive if sessionStorage is unavailable.
+    }
 
     return key;
 };
+
 
 function Checkout() {
     const navigate = useNavigate();
@@ -576,13 +589,9 @@ function Checkout() {
                                     />
 
                                     <p className="text-xs leading-6 text-[#65564C]">
-                                        Your order details will be sent securely
-                                        to the store. The server verifies product
-                                        availability and calculates the final
-                                        amount using the latest prices in the
-                                        database. Payment and delivery
-                                        arrangements will be confirmed
-                                        separately by the store.
+                                        **Order Confirmation & Payment**
+
+After you place your order, our store owner will contact you on your registered mobile number to confirm your order and delivery details. Payment instructions will be shared during the call. Your order will be confirmed once the payment is completed and verified.
                                     </p>
                                 </div>
                             </div>

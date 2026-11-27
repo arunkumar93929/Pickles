@@ -45,7 +45,7 @@ const BrandStory = () => {
 
           <p className="mt-4 text-sm leading-8 text-[#65564C] md:text-base">
             Inspired by the rich culinary heritage of Andhra Pradesh,
-            Shadruchulu celebrates the bold, tangy and spicy flavours
+            Kumar Pickles celebrates the bold, tangy and spicy flavours
             that bring people together around the table.
           </p>
 

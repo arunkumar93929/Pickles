@@ -7,7 +7,7 @@ import About from "./pages/About";
 import ProductDetails from "./pages/ProductDetails";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
-import Account from "./pages/Account";
+// import Account from "./pages/Account";
 import InfoPage from "./pages/InfoPage";
 import MyOrders from "./pages/MyOrders";
 import OrderConfirmation from "./pages/OrderConfirmation";
@@ -31,7 +31,7 @@ function App() {
           path="/order-confirmation/:orderId"
           element={<OrderConfirmation />}
         />
-        <Route path="/account" element={<Account />} />
+        {/* <Route path="/account" element={<Account />} /> */}
 
         <Route path="/admin/login" element={<AdminLogin />} />
 

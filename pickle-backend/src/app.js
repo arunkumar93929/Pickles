@@ -13,7 +13,7 @@ const app = express();
 app.use(helmet());
 
 app.use(cors({
-    origin: process.env.CLIENT_URL,
+    origin: [process.env.CLIENT_URL,"https://directed-replica-printed-hometown.trycloudflare.com"],
     credentials: true
 }));
 

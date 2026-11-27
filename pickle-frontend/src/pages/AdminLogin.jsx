@@ -61,7 +61,7 @@ function AdminLogin() {
           </div>
 
           <h1 className="text-2xl font-bold text-[#33251F]">
-            Shadruchulu Admin
+            Kumar Pickles Admin
           </h1>
 
           <p className="mt-2 text-sm text-gray-500">

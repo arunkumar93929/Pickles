@@ -32,7 +32,7 @@ const Newsletter = () => {
 
         <p className="mx-auto mt-5 max-w-lg text-sm leading-7 text-[#65564C]">
           Stay connected with our latest flavours, updates
-          and stories from the world of Shadruchulu.
+          and stories from the world of Kumar Pickles.
         </p>
 
         <form

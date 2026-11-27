@@ -18,6 +18,32 @@ const formatPrice = (amount) =>
         maximumFractionDigits: 0,
     }).format(amount);
 
+
+const normalizeCategory = (category) => {
+    const value = String(category || "")
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z]/g, "");
+
+    // Check non-vegetarian first because it contains "vegetarian".
+    if (
+        value.includes("nonveg") ||
+        value.includes("nonvegetarian")
+    ) {
+        return "non-veg";
+    }
+
+    if (
+        value === "veg" ||
+        value.includes("vegetarian") ||
+        value.startsWith("veg")
+    ) {
+        return "veg";
+    }
+
+    return value;
+};
+
 function Shop() {
     const [searchParams, setSearchParams] = useSearchParams();
 
@@ -31,48 +57,66 @@ function Shop() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
-    useEffect(() => {
-        let active = true;
+    
+useEffect(() => {
+    let active = true;
+    let requestInProgress = false;
 
-        const fetchProducts = async () => {
-            try {
+    const fetchProducts = async (initialLoad = false) => {
+        // Prevent overlapping requests.
+        if (requestInProgress) return;
+
+        requestInProgress = true;
+
+        try {
+            if (initialLoad && active) {
                 setLoading(true);
-                setError("");
-
-                const data = await getProducts();
-
-                if (active) {
-                    setProducts(data);
-                }
-            } catch (err) {
-                if (active) {
-                    setError(
-                        err.response?.data?.message ||
-                        "Unable to load products. Please try again."
-                    );
-                }
-            } finally {
-                if (active) {
-                    setLoading(false);
-                }
             }
-        };
 
-        fetchProducts();
+            const data = await getProducts();
 
-        return () => {
-            active = false;
-        };
-    }, []);
+            if (active) {
+                setProducts(data);
+                setError("");
+            }
+        } catch (err) {
+            if (active && initialLoad) {
+                setError(
+                    err.response?.data?.message ||
+                    "Unable to load products. Please try again."
+                );
+            }
+        } finally {
+            requestInProgress = false;
+
+            if (active && initialLoad) {
+                setLoading(false);
+            }
+        }
+    };
+
+    // Load products immediately when the page opens.
+    fetchProducts(true);
+
+    // Refresh product data every 15 seconds.
+    const refreshInterval = setInterval(() => {
+        fetchProducts(false);
+    }, 15000);
+
+    return () => {
+        active = false;
+        clearInterval(refreshInterval);
+    };
+}, []);
+
 
     const visibleProducts = useMemo(() => {
         const filtered = products.filter((product) => {
-            const productCategory = product.category
-                ?.trim()
-                .toLowerCase();
+           
+const productCategory = normalizeCategory(product.category);
 
-            const matchesCategory =
-                category === "all" || productCategory === category;
+const matchesCategory =
+    category === "all" || productCategory === category;
 
             const matchesSearch = (
                 `${product.name} ${product.description}`
@@ -144,7 +188,7 @@ function Shop() {
             <main className="min-h-screen bg-[#FAF5EB]">
                 <section className="bg-[#F3E9D8] px-5 py-16 text-center md:py-20">
                     <p className="mb-4 text-xs font-semibold uppercase tracking-[0.3em] text-[#8E2922]">
-                        The Shadruchulu Collection
+                        The Kumar Pickles Collection
                     </p>
 
                     <h1 className="font-serif text-4xl text-[#33251F] md:text-6xl">
@@ -316,11 +360,7 @@ function Shop() {
                     ) : visibleProducts.length > 0 ? (
                         <div className="grid grid-cols-2 gap-x-4 gap-y-9 md:grid-cols-3 md:gap-x-7 lg:grid-cols-4">
                             {visibleProducts.map((product) => {
-                                const image =
-                                    product.images?.[0]?.url ||
-                                    fallbackImages[
-                                        product.category?.toLowerCase()
-                                    ];
+                                const image = product.images?.[0]?.url ||fallbackImages[normalizeCategory(product.category)];
 
                                 const prices = product.sizes
                                     ?.map((size) => size.price)
@@ -347,11 +387,7 @@ function Shop() {
                                             )}
 
                                             <span
-                                                className={`absolute left-3 top-3 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-white ${
-                                                    product.category?.toLowerCase() === "veg"
-                                                        ? "bg-[#58613B]"
-                                                        : "bg-[#8E2922]"
-                                                }`}
+                                                className={`absolute left-3 top-3 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-white ${normalizeCategory(product.category) === "veg"? "bg-[#58613B]": "bg-[#8E2922]"}`}
                                             >
                                                 {product.category}
                                             </span>

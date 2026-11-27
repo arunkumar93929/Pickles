@@ -4,6 +4,30 @@ import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getProducts } from "../services/productService";
 
+const normalizeCategory = (category) => {
+  const normalized = String(category || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z]/g, "");
+
+  // Check non-vegetarian first to avoid incorrect matching.
+  if (
+    normalized.includes("nonveg") ||
+    normalized.includes("nonvegetarian")
+  ) {
+    return "non-veg";
+  }
+
+  if (
+    normalized.includes("veg") ||
+    normalized.includes("vegetarian")
+  ) {
+    return "veg";
+  }
+
+  return "non-veg";
+};
+
 const FeaturedProducts = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -105,8 +129,11 @@ const FeaturedProducts = () => {
           <div className="grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-2 md:gap-x-7 lg:grid-cols-4">
 
             {featuredProducts.map((product) => {
-              const image = product.images?.[0]?.url || product.image || "";
-              const isVeg = product.category?.toLowerCase() === "veg";
+              const image =
+                product.images?.[0]?.url || product.image || "";
+
+              const isVeg =
+                normalizeCategory(product.category) === "veg";
 
               return (
                 <Link

@@ -88,7 +88,7 @@ function OrderConfirmation() {
                                 </p>
 
                                 <h1 className="mt-3 font-serif text-4xl text-[#33251F] sm:text-5xl">
-                                    Your order is placed!
+                                    Order received successfully!
                                 </h1>
 
                                 <p className="mt-4 text-sm leading-7 text-[#65564C]">
@@ -147,7 +147,7 @@ function OrderConfirmation() {
 
                                     <div className="mt-5 flex justify-between border-t border-[#E5D8C6] pt-5 text-sm">
                                         <span className="font-semibold text-[#33251F]">
-                                            Confirmed product total
+                                            Estimated product total
                                         </span>
 
                                         <strong className="text-[#8E2922]">

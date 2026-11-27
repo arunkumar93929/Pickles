@@ -11,7 +11,7 @@ function About() {
         <section className="bg-[#F3E9D8] px-5 py-20 text-center md:py-28">
           <p className="mb-4 text-xs font-semibold uppercase tracking-[0.3em] text-[#8E2922]">A story of flavour</p>
           <h1 className="font-serif text-4xl leading-tight text-[#33251F] md:text-6xl">Rooted in Tradition.<span className="block italic text-[#8E2922]">Made for Today.</span></h1>
-          <p className="mx-auto mt-6 max-w-2xl text-sm leading-8 text-[#65564C] md:text-base">Inspired by the rich culinary heritage of Andhra Pradesh, Shadruchulu celebrates bold, tangy and spicy flavours that bring people together around the table.</p>
+          <p className="mx-auto mt-6 max-w-2xl text-sm leading-8 text-[#65564C] md:text-base">Inspired by the rich culinary heritage of Andhra Pradesh, Kumar Pickles celebrates bold, tangy and spicy flavours that bring people together around the table.</p>
         </section>
         <section className="mx-auto grid max-w-7xl items-center gap-12 px-5 py-16 md:grid-cols-2 lg:px-10 lg:py-24">
           <img src="https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=1200&q=85" alt="Traditional spices and ingredients" className="h-[380px] w-full object-cover md:h-[520px]" />

@@ -20,6 +20,20 @@ const formatPrice = (amount) =>
         maximumFractionDigits: 0
     }).format(amount);
 
+function isValidPrice(price) {
+    const value = Number(price);
+
+    return Number.isFinite(value) && value > 0;
+}
+
+function isValidQuantity(quantity) {
+    return (
+        Number.isInteger(quantity) &&
+        quantity >= 1 &&
+        quantity <= 20
+    );
+}
+
 function Cart() {
     const [cart, setCart] = useState(() => getCart());
 
@@ -30,20 +44,30 @@ function Cart() {
         window.addEventListener("storage", refresh);
 
         return () => {
-            window.removeEventListener("shadruchulu-cart-updated", refresh);
+            window.removeEventListener(
+                "shadruchulu-cart-updated",
+                refresh
+            );
+
             window.removeEventListener("storage", refresh);
         };
     }, []);
 
     const updateQuantity = (key, amount) => {
+        if (!Number.isInteger(amount)) return;
+
         const updated = cart.map((item) => {
             if (item.key !== key) return item;
+
+            const currentQuantity = isValidQuantity(item.quantity)
+                ? item.quantity
+                : 1;
 
             return {
                 ...item,
                 quantity: Math.max(
                     1,
-                    Math.min(20, item.quantity + amount)
+                    Math.min(20, currentQuantity + amount)
                 )
             };
         });
@@ -53,7 +77,9 @@ function Cart() {
     };
 
     const removeItem = (key) => {
-        const updated = cart.filter((item) => item.key !== key);
+        const updated = cart.filter(
+            (item) => item.key !== key
+        );
 
         setCart(updated);
         saveCart(updated);
@@ -70,16 +96,24 @@ function Cart() {
     );
 
     const subtotal = cart.reduce((total, item) => {
-        const unitPrice = Number(item.unitPrice) || 0;
-        const quantity = Number(item.quantity) || 0;
+        const unitPrice = Number(item.unitPrice);
 
-        return total + unitPrice * quantity;
+        if (
+            !isValidPrice(unitPrice) ||
+            !isValidQuantity(item.quantity)
+        ) {
+            return total;
+        }
+
+        return total + unitPrice * item.quantity;
     }, 0);
 
-    const hasInvalidPrice = cart.some(
+    const hasInvalidItems = cart.some(
         (item) =>
-            !Number.isFinite(Number(item.unitPrice)) ||
-            Number(item.unitPrice) <= 0
+            !isValidPrice(item.unitPrice) ||
+            !isValidQuantity(item.quantity) ||
+            !item.productId ||
+            !item.sizeLabel
     );
 
     return (
@@ -140,9 +174,11 @@ function Cart() {
                         <div className="mt-10 grid items-start gap-8 lg:grid-cols-[1fr_340px]">
                             <div className="border-y border-[#E5D8C6]">
                                 {cart.map((item) => {
-                                    const unitPrice = Number(item.unitPrice) || 0;
-                                    const quantity = Number(item.quantity) || 0;
+                                    const unitPrice = Number(item.unitPrice);
+                                    const quantity = item.quantity;
                                     const sizeLabel = item.sizeLabel || item.weight;
+                                    const validPrice = isValidPrice(unitPrice);
+                                    const validQuantity = isValidQuantity(quantity);
 
                                     return (
                                         <article
@@ -169,7 +205,7 @@ function Cart() {
                                                         </h2>
 
                                                         <p className="mt-1 text-xs text-[#827365]">
-                                                            Pack size: {sizeLabel}
+                                                            Pack size: {sizeLabel || "Unavailable"}
                                                         </p>
                                                     </div>
 
@@ -184,11 +220,15 @@ function Cart() {
                                                 </div>
 
                                                 <p className="mt-3 text-sm font-semibold text-[#8E2922]">
-                                                    {formatPrice(unitPrice)}
+                                                    {validPrice
+                                                        ? formatPrice(unitPrice)
+                                                        : "Invalid price"}
 
-                                                    <span className="text-xs font-normal text-[#827365]">
-                                                        {" "}per pack
-                                                    </span>
+                                                    {validPrice && (
+                                                        <span className="text-xs font-normal text-[#827365]">
+                                                            {" "}per pack
+                                                        </span>
+                                                    )}
                                                 </p>
 
                                                 <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
@@ -219,7 +259,9 @@ function Cart() {
                                                     </div>
 
                                                     <p className="text-sm font-semibold text-[#33251F]">
-                                                        {formatPrice(unitPrice * quantity)}
+                                                        {validPrice && validQuantity
+                                                            ? formatPrice(unitPrice * quantity)
+                                                            : "Subtotal unavailable"}
                                                     </p>
                                                 </div>
                                             </div>
@@ -235,6 +277,7 @@ function Cart() {
 
                                 <div className="mt-5 flex justify-between border-b border-[#D9C9B5] pb-4 text-sm text-[#65564C]">
                                     <span>Total items</span>
+
                                     <span className="font-semibold text-[#33251F]">
                                         {itemCount}
                                     </span>
@@ -242,6 +285,7 @@ function Cart() {
 
                                 <div className="mt-4 flex justify-between text-sm text-[#65564C]">
                                     <span>Subtotal</span>
+
                                     <span className="font-semibold text-[#33251F]">
                                         {formatPrice(subtotal)}
                                     </span>
@@ -264,20 +308,25 @@ function Cart() {
                                     </p>
                                 </div>
 
-                                {hasInvalidPrice && (
+                                {hasInvalidItems && (
                                     <p className="mt-4 text-xs leading-5 text-[#8E2922]">
-                                        One or more cart items have an invalid price. Remove those items and add them again from the Shop page.
+                                        One or more cart items have invalid details.
+                                        Remove those items and add them again from the Shop page.
                                     </p>
                                 )}
 
                                 <Link
                                     to="/checkout"
                                     className={`mt-7 flex w-full items-center justify-center gap-2 bg-[#8E2922] px-5 py-4 text-sm font-semibold text-white transition hover:bg-[#702019] ${
-                                        hasInvalidPrice ? "pointer-events-none opacity-50" : ""
+                                        hasInvalidItems
+                                            ? "pointer-events-none opacity-50"
+                                            : ""
                                     }`}
-                                    aria-disabled={hasInvalidPrice}
+                                    aria-disabled={hasInvalidItems}
                                     onClick={(event) => {
-                                        if (hasInvalidPrice) event.preventDefault();
+                                        if (hasInvalidItems) {
+                                            event.preventDefault();
+                                        }
                                     }}
                                 >
                                     Proceed to Checkout

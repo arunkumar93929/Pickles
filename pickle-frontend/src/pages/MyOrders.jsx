@@ -36,7 +36,7 @@ function MyOrders() {
       <Navbar />
       <main className="min-h-[65vh] bg-[#FAF5EB] px-5 py-12 lg:px-10 lg:py-16">
         <div className="mx-auto max-w-5xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#8E2922]">Your Shadruchulu account</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#8E2922]">Your Kumar Pickles account</p>
           <div className="mt-3 flex flex-wrap items-end justify-between gap-4">
             <div>
               <h1 className="font-serif text-4xl text-[#33251F] md:text-5xl">My Orders</h1>
@@ -89,7 +89,7 @@ function MyOrders() {
               })}
             </div>
           )}
-          <p className="mt-7 text-xs leading-6 text-[#827365]">Demo mode: order history is stored only in this browser. It is not synced to a customer account or the Shadruchulu team.</p>
+          <p className="mt-7 text-xs leading-6 text-[#827365]">Demo mode: order history is stored only in this browser. It is not synced to a customer account or the Kumar Pickles team.</p>
         </div>
       </main>
       <Footer />

@@ -19,7 +19,7 @@ function InfoPage({ notFound = false }) {
       <Navbar />
       <main className="grid min-h-[55vh] place-items-center bg-[#FAF5EB] px-5 py-16 text-center">
         <div className="max-w-xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#8E2922]">Shadruchulu</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#8E2922]">Kumar Pickles</p>
           <h1 className="mt-4 font-serif text-4xl text-[#33251F] md:text-5xl">{title}</h1>
           <p className="mt-5 text-sm leading-7 text-[#65564C]">{description}</p>
           <Link to="/" className="mt-8 inline-flex bg-[#8E2922] px-7 py-4 text-sm font-semibold text-white hover:bg-[#702019]">Back to Home</Link>

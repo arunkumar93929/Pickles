@@ -14,7 +14,7 @@ const Footer = () => {
             to="/"
             className="font-serif text-3xl font-bold tracking-wide"
           >
-            SHADRUCHULU<span className="text-[#D5A34D]">.</span>
+            Kumar Pickles<span className="text-[#D5A34D]">.</span>
           </Link>
 
           <p className="mt-3 text-[10px] uppercase tracking-[0.3em] text-[#D5A34D]">
@@ -115,7 +115,7 @@ const Footer = () => {
       <div className="mx-auto flex max-w-7xl flex-col justify-between gap-4 pt-7 text-xs text-white/50 sm:flex-row sm:items-center">
 
         <p>
-          © {new Date().getFullYear()} Shadruchulu. All rights reserved.
+          © {new Date().getFullYear()} Kumar Pickles. All rights reserved.
         </p>
 
         <a

@@ -1,10 +1,12 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
     ArrowLeft,
     ArrowRight,
     Check,
+    ChevronLeft,
+    ChevronRight,
     Minus,
     Plus,
     ShoppingBag,
@@ -30,62 +32,189 @@ function ProductDetails() {
 
     const [product, setProduct] = useState(null);
     const [selectedSize, setSelectedSize] = useState(null);
+    const [selectedImage, setSelectedImage] = useState("");
     const [quantity, setQuantity] = useState(1);
     const [added, setAdded] = useState(false);
+    const [addError, setAddError] = useState("");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
+    const feedbackTimerRef = useRef(null);
+
+    // Initial product fetch + automatic refresh every 15 seconds.
     useEffect(() => {
         let isMounted = true;
+        let requestInProgress = false;
 
-        const fetchProduct = async () => {
+        const fetchProduct = async (initialLoad = false) => {
+            if (requestInProgress) return;
+
+            requestInProgress = true;
+
             try {
-                setLoading(true);
-                setError("");
-                setProduct(null);
-                setSelectedSize(null);
-                setQuantity(1);
-
                 const data = await getProductById(id);
 
                 if (!isMounted) return;
 
                 setProduct(data);
 
-                if (data?.sizes?.length > 0) {
-                    setSelectedSize(data.sizes[0]);
+                // Preserve the selected pack if it still exists.
+                // Update its details, including price, from the latest API data.
+                setSelectedSize((currentSize) => {
+                    const availableSizes = data?.sizes || [];
+
+                    if (availableSizes.length === 0) {
+                        return null;
+                    }
+
+                    return (
+                        availableSizes.find(
+                            (size) => size.label === currentSize?.label
+                        ) || availableSizes[0]
+                    );
+                });
+
+                // Preserve the selected image if it still exists.
+                setSelectedImage((currentImage) => {
+                    const availableImages = data?.images || [];
+
+                    if (availableImages.length === 0) {
+                        return "";
+                    }
+
+                    const imageStillExists = availableImages.some(
+                        (item) => item.url === currentImage
+                    );
+
+                    return imageStillExists
+                        ? currentImage
+                        : availableImages[0].url;
+                });
+
+                if (initialLoad) {
+                    setError("");
                 }
             } catch (err) {
                 if (!isMounted) return;
 
-                setError(
-                    err.response?.data?.message ||
-                    "Unable to load this product. Please try again."
-                );
+                if (initialLoad) {
+                    setProduct(null);
+                    setError(
+                        err.response?.data?.message ||
+                        "Unable to load this product. Please try again."
+                    );
+                } else if (err.response?.status === 404) {
+                    // The product may have been deleted by the admin.
+                    setProduct(null);
+                    setError("This product is no longer available.");
+                }
+                // Other background refresh failures do not interrupt
+                // the currently displayed product.
             } finally {
-                if (isMounted) {
+                requestInProgress = false;
+
+                if (isMounted && initialLoad) {
                     setLoading(false);
                 }
             }
         };
 
-        fetchProduct();
+        // Reset state when navigating to a different product.
+        setLoading(true);
+        setError("");
+        setProduct(null);
+        setSelectedSize(null);
+        setSelectedImage("");
+        setQuantity(1);
+        setAdded(false);
+        setAddError("");
+
+        if (feedbackTimerRef.current) {
+            window.clearTimeout(feedbackTimerRef.current);
+            feedbackTimerRef.current = null;
+        }
+
+        fetchProduct(true);
+
+        const refreshInterval = window.setInterval(() => {
+            fetchProduct(false);
+        }, 15000);
 
         return () => {
             isMounted = false;
+            window.clearInterval(refreshInterval);
         };
     }, [id]);
+
+    // Clear the add-to-cart feedback timer when the component unmounts.
+    useEffect(() => {
+        return () => {
+            if (feedbackTimerRef.current) {
+                window.clearTimeout(feedbackTimerRef.current);
+                feedbackTimerRef.current = null;
+            }
+        };
+    }, []);
+
+    const changeImage = (direction) => {
+        const images = product?.images || [];
+
+        if (images.length <= 1) return;
+
+        const currentIndex = images.findIndex(
+            (item) => item.url === selectedImage
+        );
+
+        const safeIndex = currentIndex === -1 ? 0 : currentIndex;
+
+        const nextIndex =
+            (safeIndex + direction + images.length) % images.length;
+
+        setSelectedImage(images[nextIndex].url);
+    };
+
+    // Keyboard navigation for the product gallery.
+    useEffect(() => {
+        if (!product || product.images?.length <= 1) return;
+
+        const handleKeyDown = (event) => {
+            if (event.key === "ArrowLeft") {
+                changeImage(-1);
+            } else if (event.key === "ArrowRight") {
+                changeImage(1);
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [product, selectedImage]);
 
     const handleAddToCart = () => {
         if (!product || !selectedSize) return;
 
-        addToCart(product, selectedSize.label, quantity);
+        try {
+            addToCart(product, selectedSize.label, quantity);
 
-        setAdded(true);
+            setAddError("");
+            setAdded(true);
 
-        window.setTimeout(() => {
+            if (feedbackTimerRef.current) {
+                window.clearTimeout(feedbackTimerRef.current);
+            }
+
+            feedbackTimerRef.current = window.setTimeout(() => {
+                setAdded(false);
+                feedbackTimerRef.current = null;
+            }, 2200);
+        } catch (err) {
             setAdded(false);
-        }, 2200);
+            setAddError(
+                err.message || "Unable to add this product to cart."
+            );
+        }
     };
 
     if (loading) {
@@ -129,9 +258,14 @@ function ProductDetails() {
         );
     }
 
-    const image = product.images?.[0]?.url || "";
+    const image = selectedImage;
+
     const isNonVegetarian =
         product.category?.toLowerCase().includes("non");
+
+    const currentImageIndex = product.images?.findIndex(
+        (item) => item.url === selectedImage
+    ) ?? -1;
 
     return (
         <>
@@ -173,17 +307,59 @@ function ProductDetails() {
                                         ? "Non-Vegetarian Pickle"
                                         : "Vegetarian Pickle"}
                                 </span>
+
+                                {product.images?.length > 1 && (
+                                    <>
+                                        <button
+                                            type="button"
+                                            onClick={() => changeImage(-1)}
+                                            aria-label="Previous product image"
+                                            className="absolute left-3 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center bg-white/90 text-[#8E2922] shadow transition hover:bg-white"
+                                        >
+                                            <ChevronLeft size={22} />
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => changeImage(1)}
+                                            aria-label="Next product image"
+                                            className="absolute right-3 top-1/2 grid h-10 w-10 -translate-y-1/2 place-items-center bg-white/90 text-[#8E2922] shadow transition hover:bg-white"
+                                        >
+                                            <ChevronRight size={22} />
+                                        </button>
+
+                                        <span className="absolute bottom-4 right-4 bg-black/60 px-3 py-1 text-xs text-white">
+                                            {currentImageIndex + 1} / {product.images.length}
+                                        </span>
+                                    </>
+                                )}
                             </div>
 
                             {product.images?.length > 1 && (
                                 <div className="mt-4 grid grid-cols-5 gap-3">
                                     {product.images.map((item, index) => (
-                                        <img
+                                        <button
                                             key={item.publicId || index}
-                                            src={item.url}
-                                            alt={`${product.name} ${index + 1}`}
-                                            className="aspect-square w-full bg-[#E8DDCE] object-cover"
-                                        />
+                                            type="button"
+                                            onClick={() =>
+                                                setSelectedImage(item.url)
+                                            }
+                                            aria-label={`View product image ${index + 1}`}
+                                            aria-pressed={
+                                                selectedImage === item.url
+                                            }
+                                            className={`overflow-hidden border-2 transition ${
+                                                selectedImage === item.url
+                                                    ? "border-[#8E2922]"
+                                                    : "border-transparent hover:border-[#D9C9B5]"
+                                            }`}
+                                        >
+                                            <img
+                                                src={item.url}
+                                                alt={`${product.name} ${index + 1}`}
+                                                className="aspect-square w-full bg-[#E8DDCE] object-cover"
+                                            />
+                                        </button>
                                     ))}
                                 </div>
                             )}
@@ -231,7 +407,9 @@ function ProductDetails() {
                                             <button
                                                 key={size._id || size.label}
                                                 type="button"
-                                                onClick={() => setSelectedSize(size)}
+                                                onClick={() =>
+                                                    setSelectedSize(size)
+                                                }
                                                 className={`border px-3 py-4 text-sm font-semibold transition ${
                                                     selectedSize?.label === size.label
                                                         ? "border-[#8E2922] bg-[#8E2922] text-white"
@@ -330,6 +508,15 @@ function ProductDetails() {
                                     )}
                                 </button>
                             </div>
+
+                            {addError && (
+                                <p
+                                    role="alert"
+                                    className="mt-3 text-sm text-[#8E2922]"
+                                >
+                                    {addError}
+                                </p>
+                            )}
 
                             <div className="mt-8 grid gap-4 border-t border-[#E5D8C6] pt-6 sm:grid-cols-2">
                                 <div className="flex items-start gap-3">

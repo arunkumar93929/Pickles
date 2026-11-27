@@ -307,7 +307,7 @@ function AdminDashboard() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-5 sm:px-6 lg:px-8">
           <div>
             <h1 className="text-xl font-bold text-[#8E2922] sm:text-2xl">
-              Shadruchulu Admin
+              Kumar Pickles Admin
             </h1>
             <p className="mt-1 text-xs text-gray-500">
               Store management dashboard

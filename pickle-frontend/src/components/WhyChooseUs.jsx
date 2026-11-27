@@ -44,7 +44,7 @@ const WhyChooseUs = () => {
 
         <div className="mx-auto mb-16 max-w-2xl text-center">
           <p className="mb-5 text-xs font-semibold uppercase tracking-[0.3em] text-[#E9BC76]">
-            The Shadruchulu Difference
+            The Kumar Pickles Difference
           </p>
 
           <h2 className="font-serif text-4xl leading-tight md:text-5xl">
@@ -56,7 +56,7 @@ const WhyChooseUs = () => {
 
           <p className="mt-6 text-sm leading-7 text-white/70 md:text-base">
             Every flavour has a story. Discover what makes the
-            world of Shadruchulu special.
+            world of Kumar Pickles special.
           </p>
         </div>
 
